@@ -14,7 +14,7 @@ checkpoint breakup_shape:
         "Break up {wildcards.shape} into the configured subunits."
     shell:
         """
-        python {input.script:q} {input.shapes:q} {params.split_by:q} {output:q} 2>{log:q}
+        python {input.script:q} {input.shapes:q} {params.split_by:q} {output:q} > {log:q} 2>&1
         """
 
 
@@ -49,7 +49,7 @@ rule prepare_resampled_inputs:
             "{input.shapes}/{wildcards.subunit}.parquet" \
             {input.land_cover_path:q} {input.slope_path:q} {input.settlement_path:q} {input.bathymetry_path:q} {input.protected_area_path:q} \
             {params.land_cover_types_yaml_string:q} \
-            {output.resampled_input:q} {output.plot:q} 2>{log:q}
+            {output.resampled_input:q} {output.plot:q} > {log:q} 2>&1
         """
 
 
@@ -78,7 +78,7 @@ rule area_potential:
         "Compute area potential for the tech {wildcards.tech} and {wildcards.subunit} in {wildcards.shape}."
     shell:
         """
-        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} 2>{log:q}
+        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} > {log:q} 2>&1
         """
 
 
@@ -95,7 +95,7 @@ rule aggregate_area_potential:
         "Aggregate area potential for the tech {wildcards.tech} in {wildcards.shape}."
     shell:
         """
-        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q}
+        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q} > {log:q} 2>&1
         """
 
 

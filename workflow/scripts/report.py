@@ -1,5 +1,7 @@
 """This script generates a report summarizing area potentials for different technologies."""
 
+import sys
+
 import geopandas as gpd
 import pandas as pd
 import rioxarray as rxr
@@ -58,6 +60,7 @@ def report(shapes, area_potentials, csv_path, html_path):
 
 
 if __name__ == "__main__":
+    sys.stderr = open(snakemake.log[0], "w", buffering=1)
     report(
         snakemake.input.shapes,
         snakemake.input.area_potentials,

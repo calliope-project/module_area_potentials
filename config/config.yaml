@@ -2,7 +2,7 @@
 # - "UTM": project each shape to the UTM zone of its centroid for buffering
 # - "epsg:xxxx": use the specified CRS for all buffering
 #   A good option is "epsg:8857" (WGS 84 / Equal Earth Greenwich) for global coverage
-buffer_crs: "epsg:8857"
+buffer_crs: "epsg:3035"
 
 split_by: country_id  # likely country_id or shape_id
 
@@ -30,7 +30,7 @@ techs:
   pv_open_field:
     initial_area: pixel_area
     continuous_layers:
-      slope:
+      slope_deg:
         min: 0
         max: 3
       settlement_share:
@@ -49,7 +49,7 @@ techs:
   wind_onshore:
     initial_area: pixel_area
     continuous_layers:
-      slope:
+      slope_deg:
         min: 0
         max: 20
       settlement_share:
