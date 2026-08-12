@@ -56,7 +56,7 @@ else:
             "Download global slope data."
         shell:
             """
-            curl -sSLo {output:q} {params.url:q} > {log:q} 2>&1
+            curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
             """
 
     rule download_bathymetry:
@@ -73,7 +73,7 @@ else:
             "Download global bathymetry data."
         shell:
             """
-            curl -sSLo {output:q} {params.url:q} > {log:q} 2>&1
+            curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
             """
 
     rule clip_slope:
@@ -102,6 +102,7 @@ else:
         wrapper:
             "v9.14.0/geo/rasterio/clip"
 
+
 ##
 # Globcover
 ##
@@ -121,7 +122,7 @@ rule download_globcover:
         "Download the GlobCover land cover data (~380 MB)."
     shell:
         """
-        curl -sSLo {output:q} {params.url:q} > {log:q} 2>&1
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
         """
 
 
@@ -141,7 +142,7 @@ rule unzip_globcover:
         "Unzip the relevant TIF files from the GlobCover zip file."
     shell:
         """
-        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} > {log:q} 2>&1
+        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} >{log:q} 2>&1
         """
 
 
@@ -178,7 +179,7 @@ rule download_ghsl:
         "Download the GHSL (Global Human Settlement Layer) built-up surface data."
     shell:
         """
-        curl -sSLo {output:q} {params.url:q} > {log:q} 2>&1
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
         """
 
 
@@ -198,7 +199,7 @@ rule unzip_ghsl:
         "Unzip the relevant TIF file from the GHSL data."
     shell:
         """
-        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} > {log:q} 2>&1
+        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} >{log:q} 2>&1
         """
 
 
@@ -237,5 +238,5 @@ rule rasterise_clip_wdpa:
         "Rasterise and cut WDPA data to the bounds of the input shapefile, using the landcover raster as reference for the rasterisation."
     shell:
         """
-        python {input.script:q} {input.shapes:q} {input.reference_raster:q} {input.protected_areas:q} {output:q} > {log:q} 2>&1
+        python {input.script:q} {input.shapes:q} {input.reference_raster:q} {input.protected_areas:q} {output:q} >{log:q} 2>&1
         """
