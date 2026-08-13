@@ -159,6 +159,55 @@ rule clip_landcover:
     wrapper:
         "v9.14.0/geo/rasterio/clip"
 
+##
+# Global Ship Traffic Density
+##
+
+rule download_ship_travel:
+    output:
+        "<resources>/automatic/global/ship_travel_density.zip",
+    log:
+        "<logs>/download_ship_travel.log",
+    localrule: True
+    conda:
+        "../envs/module.yaml"
+    params:
+        url=internal["resources"]["automatic"]["ship_travel"],
+    message:
+        "Download Global Ship Density for all vessel types."
+    shell:
+        """
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
+        """
+
+
+rule unzip_ship_travel:
+    input:
+        rules.download_ship_travel.output[0],
+    output:
+        temp("<resources>/automatic/global/ship_travel.tif"),
+    log:
+        "<logs>/unzip_ship_travel.log",
+    params:
+        internal_paths=internal["resources"]["automatic"]["ship_travel_tif"],
+    message:
+        "Unzip the relevant TIF file from the ship travel density data."
+    wrapper:
+        "v9.8.0/utils/libarchive/extract"
+
+
+rule clip_ship_travel:
+    input:
+        like_vector=rules.normalise_shapes.output.shapes,
+        raster=rules.unzip_ship_travel.output[0],
+    output:
+        path="<resources>/automatic/cutout/{shape}/ship_travel.tif",
+    log:
+        "<logs>/{shape}/clip_ship_travel.log",
+    message:
+        "Cut ship travel data to the bounds of the input shapefile."
+    wrapper:
+        "v9.14.0/geo/rasterio/clip"
 
 ##
 # Global Human Settlement Layer (GHSL)

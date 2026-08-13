@@ -1,4 +1,7 @@
 
+import shlex
+
+
 rule prepare_resampled_inputs:
     input:
         script=workflow.source_path("../scripts/resample.py"),
@@ -8,6 +11,11 @@ rule prepare_resampled_inputs:
         settlement_path=rules.clip_settlement.output,
         bathymetry_path=rules.clip_bathymetry.output,
         protected_area_path=rules.rasterise_clip_wdpa.output,
+        ship_travel_path=branch(
+            condition=uses_ship_travel,
+            then=rules.clip_ship_travel.output,
+            otherwise=[],
+        ),
     output:
         resampled_input="<resources>/automatic/resampled_inputs/{shape}/{subunit}.nc",
         plot=report(
@@ -22,6 +30,11 @@ rule prepare_resampled_inputs:
         # Use internal defaults if not overridden
         land_cover_types_yaml_string=internal["land_cover_types"]
         | config.get("land_cover_types", {}),
+        ship_travel_arg=lambda wildcards, input: (
+            f"--ship-travel-path {shlex.quote(str(input.ship_travel_path))}"
+            if input.ship_travel_path
+            else ""
+        ),
     message:
         "Resample inputs for {wildcards.subunit} in {wildcards.shape} to the projection and resolution of the land cover data, while aggregating land cover types."
     shell:
@@ -30,7 +43,8 @@ rule prepare_resampled_inputs:
             "{input.shapes}/{wildcards.subunit}.parquet" \
             {input.land_cover_path:q} {input.slope_path:q} {input.settlement_path:q} {input.bathymetry_path:q} {input.protected_area_path:q} \
             {params.land_cover_types_yaml_string:q} \
-            {output.resampled_input:q} {output.plot:q} >{log:q} 2>&1
+            {output.resampled_input:q} {output.plot:q} \
+            {params.ship_travel_arg} >{log:q} 2>&1
         """
 
 
