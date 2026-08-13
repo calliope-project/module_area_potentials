@@ -8,7 +8,7 @@ if config.get("tiny_files", False):
 
     rule clip_slope:
         input:
-            like_vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
         output:
             path="<resources>/automatic/cutout/{shape}/slope.tif",
         log:
@@ -23,7 +23,7 @@ if config.get("tiny_files", False):
 
     rule clip_bathymetry:
         input:
-            like_vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
         output:
             path="<resources>/automatic/cutout/{shape}/bathymetry.tif",
         log:
@@ -78,7 +78,7 @@ else:
 
     rule clip_slope:
         input:
-            like_vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
             raster=rules.download_slope.output[0],
         output:
             path="<resources>/automatic/cutout/{shape}/slope.tif",
@@ -91,7 +91,7 @@ else:
 
     rule clip_bathymetry:
         input:
-            like_vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
             raster=rules.download_bathymetry.output[0],
         output:
             path="<resources>/automatic/cutout/{shape}/bathymetry.tif",
@@ -148,7 +148,7 @@ rule unzip_globcover:
 
 rule clip_landcover:
     input:
-        like_vector="<shapes>",
+        like_vector=rules.normalise_shapes.output.shapes,
         raster=rules.unzip_globcover.output[0],
     output:
         path="<resources>/automatic/cutout/{shape}/landcover.tif",
@@ -205,7 +205,7 @@ rule unzip_ghsl:
 
 rule clip_settlement:
     input:
-        like_vector="<shapes>",
+        like_vector=rules.normalise_shapes.output.shapes,
         raster=rules.unzip_ghsl.output[0],
     output:
         path="<resources>/automatic/cutout/{shape}/settlement.tif",
@@ -225,7 +225,7 @@ rule clip_settlement:
 rule rasterise_clip_wdpa:
     input:
         script=workflow.source_path("../scripts/clip_and_rasterise_polys.py"),
-        shapes="<shapes>",
+        shapes=rules.normalise_shapes.output.shapes,
         reference_raster=rules.clip_landcover.output[0],
         protected_areas="<wdpa>",
     output:

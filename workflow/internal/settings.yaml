@@ -11,6 +11,9 @@ resources:
     ghsl: "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss/V1-0/GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss_V1_0.zip"
     ghsl_tif: "GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss_V1_0.tif"
 
+# NOTE: only works because GlobCover is already in this CRS!
+target_crs: "EPSG:4326"
+
 land_cover_types:
   POST_FLOODING_CROPLANDS: NOT_SUITABLE
   RAINFED_CROPLANDS: FARM

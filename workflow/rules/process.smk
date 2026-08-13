@@ -1,22 +1,3 @@
-checkpoint breakup_shape:
-    input:
-        script=workflow.source_path("../scripts/breakup_shape.py"),
-        shapes="<shapes>",
-    output:
-        directory("<resources>/automatic/shapes/{shape}"),
-    log:
-        "<logs>/{shape}/breakup_shape.log",
-    conda:
-        "../envs/module.yaml"
-    params:
-        split_by=config["split_by"],
-    message:
-        "Break up {wildcards.shape} into the configured subunits."
-    shell:
-        """
-        python {input.script:q} {input.shapes:q} {params.split_by:q} {output:q} >{log:q} 2>&1
-        """
-
 
 rule prepare_resampled_inputs:
     input:
@@ -119,7 +100,7 @@ rule plot_aggregated_area_potential:
 
 rule area_potential_report:
     input:
-        shapes="<shapes>",
+        shapes=rules.normalise_shapes.output.shapes,
         area_potentials=expand(
             workflow.pathvars.apply("<area_potential>"),
             tech=config["techs"].keys(),
