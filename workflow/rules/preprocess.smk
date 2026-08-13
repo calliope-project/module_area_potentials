@@ -1,5 +1,6 @@
 """Rules related to data harmonisation."""
 
+
 rule normalise_shapes:
     input:
         shapes="<shapes>",
@@ -10,7 +11,7 @@ rule normalise_shapes:
     conda:
         "../envs/module.yaml"
     params:
-        crs=internal["target_crs"]
+        crs=internal["target_crs"],
     message:
         "Validate and normalize {wildcards.shape} to {params.crs}."
     script:
