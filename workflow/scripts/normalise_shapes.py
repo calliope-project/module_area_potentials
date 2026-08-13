@@ -19,6 +19,7 @@ def main() -> None:
     if not shapes.crs.equals(target_crs):
         shapes = shapes.to_crs(target_crs)
 
+    shapes = ShapesSchema.validate(shapes)
     shapes.to_parquet(snakemake.output.shapes)
 
 
