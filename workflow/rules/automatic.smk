@@ -159,9 +159,11 @@ rule clip_landcover:
     wrapper:
         "v9.14.0/geo/rasterio/clip"
 
+
 ##
 # Global Ship Traffic Density
 ##
+
 
 rule download_ship_travel:
     output:
@@ -208,6 +210,7 @@ rule clip_ship_travel:
         "Cut ship travel data to the bounds of the input shapefile."
     wrapper:
         "v9.14.0/geo/rasterio/clip"
+
 
 ##
 # Global Human Settlement Layer (GHSL)
