@@ -224,7 +224,7 @@ def resample_inputs(
     ##
     da_slope = rxr.open_rasterio(slope_path, masked=True) / 100
     print(f"Slope resolution: {da_slope.rio.resolution()}")
-    resampled["slope_slope"] = da_slope.rio.reproject_match(
+    resampled["slope_deg"] = da_slope.rio.reproject_match(
         reference_raster, resampling=Resampling.average
     )
     del da_slope
