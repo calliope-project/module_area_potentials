@@ -17,7 +17,7 @@ pathvars:
       default: "<resources>/user/shapes/{shape}.parquet"
       description: >
         Region geometries in GeoParquet format.
-        The module normalises these geometries to EPSG:4326 before processing.
+        The module internally normalises these geometries and transforms them to EPSG:4326 before processing.
         These should conform to the schema defined in https://github.com/calliope-project/module_geo_boundaries/blob/main/workflow/internal/shape.schema.yaml.
     wdpa:
       default: "<resources>/user/wdpa.gdb"
