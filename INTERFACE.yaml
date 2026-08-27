@@ -29,3 +29,4 @@ pathvars:
 wildcards:
   shape: "Name of the shape to be processed, e.g., 'world', 'europe', 'MEX'."
   tech: "Name of the technology, e.g., 'pv_rooftop' or 'wind_offshore'. Available technologies are defined in the module configuration."
+  scenario: "Scenario name from the module configuration."
