@@ -69,7 +69,9 @@ rule area_potential:
     conda:
         "../envs/module.yaml"
     params:
-        config=lambda wildcards: config["scenarios"][f"{wildcards.scenario}"]["techs"][f"{wildcards.tech}"],
+        config=lambda wildcards: config["scenarios"][f"{wildcards.scenario}"]["techs"][
+            f"{wildcards.tech}"
+        ],
         subunit_override_config=lambda wildcards: config.get("overrides", {})
         .get(wildcards.scenario, {})
         .get(wildcards.subunit, {})

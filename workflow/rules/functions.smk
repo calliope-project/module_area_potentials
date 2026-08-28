@@ -7,5 +7,6 @@ def get_subunits(wildcards):
         ).subunit,
     )
 
+
 def get_techs(wildcards):
     return config["scenarios"][wildcards.scenario]["techs"].keys()

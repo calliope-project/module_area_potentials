@@ -9,7 +9,7 @@ split_by: country_id  # likely country_id or shape_id
 # Optional - specify land_cover_types here to override the internal defaults.
 
 scenarios:
-  # Define at least one scenario. Multiple scenarios can be used to study 
+  # Define at least one scenario. Multiple scenarios can be used to study
   # the effect of different assumptions on the results.
   base:
     techs:

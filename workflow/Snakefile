@@ -32,15 +32,19 @@ workflow.source_path("scripts/_geo.py")
 workflow.source_path("scripts/_schemas.py")
 workflow.source_path("scripts/_script_utils.py")
 
+
 wildcard_constraints:
     shape="[a-zA-Z0-9_-]+",
     subunit="[a-zA-Z0-9_]+",
     scenario="|".join(config["scenarios"].keys()),
-    tech="|".join([
+    tech="|".join(
+        [
             tech
             for scenario in config["scenarios"]
             for tech in config["scenarios"][scenario]["techs"]
-        ])
+        ]
+    ),
+
 
 # Add all your includes here.
 include: "rules/functions.smk"
