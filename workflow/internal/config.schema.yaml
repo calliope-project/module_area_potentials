@@ -80,4 +80,3 @@ properties:
     patternProperties:
       "^[A-Za-z0-9_-]+$":
         $ref: "#/$defs/scenario"
-
