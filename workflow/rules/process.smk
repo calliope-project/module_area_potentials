@@ -53,23 +53,26 @@ rule area_potential:
         shapes=rules.breakup_shape.output,
         resampled_path=rules.prepare_resampled_inputs.output.resampled_input,
     output:
-        area_potential="<results>/{shape}/{subunit}/area_potential_{tech}.tif",
+        area_potential="<results>/{shape}/{scenario}/{subunit}/area_potential_{tech}.tif",
         plot=report(
-            "<results>/{shape}/{subunit}/area_potential_{tech}.png",
+            "<results>/{shape}/{scenario}/{subunit}/area_potential_{tech}.png",
             category="area_potential",
         ),
     log:
-        "<logs>/{shape}/{subunit}/area_potential_{tech}.log",
+        "<logs>/{shape}/{scenario}/{subunit}/area_potential_{tech}.log",
     conda:
         "../envs/module.yaml"
     params:
-        config=lambda wildcards: config["techs"][f"{wildcards.tech}"],
+        config=lambda wildcards: config["scenarios"][f"{wildcards.scenario}"]["techs"][
+            f"{wildcards.tech}"
+        ],
         subunit_override_config=lambda wildcards: config.get("overrides", {})
+        .get(wildcards.scenario, {})
         .get(wildcards.subunit, {})
         .get(wildcards.tech, {}),
         buffer_crs=lambda wildcards: config["buffer_crs"],
     message:
-        "Compute area potential for the tech {wildcards.tech} and {wildcards.subunit} in {wildcards.shape}."
+        "Compute area potential for the scenario {wildcards.scenario}, the tech {wildcards.tech} and {wildcards.subunit} in {wildcards.shape}."
     shell:
         """
         python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} >{log:q} 2>&1
@@ -82,11 +85,11 @@ rule aggregate_area_potential:
     output:
         aggregated_area_potential="<area_potential>",
     log:
-        "<logs>/{shape}/aggregate_area_potential_{tech}.log",
+        "<logs>/{shape}/{scenario}/aggregate_area_potential_{tech}.log",
     conda:
         "../envs/module.yaml"
     message:
-        "Aggregate area potential for the tech {wildcards.tech} in {wildcards.shape}."
+        "Aggregate area potential for the scenario {wildcards.scenario} and the tech {wildcards.tech} in {wildcards.shape}."
     shell:
         """
         gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q} >{log:q} 2>&1
@@ -98,15 +101,15 @@ rule plot_aggregated_area_potential:
         rules.aggregate_area_potential.output.aggregated_area_potential,
     output:
         report(
-            "<results>/{shape}/area_potential_{tech}.png",
+            "<results>/{shape}/{scenario}/area_potential_{tech}.png",
             category="area_potential_plot",
         ),
     log:
-        "<logs>/{shape}/plot_aggregated_area_potential_{tech}.log",
+        "<logs>/{shape}/{scenario}/plot_aggregated_area_potential_{tech}.log",
     conda:
         "../envs/module.yaml"
     message:
-        "Plot aggregated area potential for the tech {wildcards.tech} in {wildcards.shape}."
+        "Plot aggregated area potential for the scenario {wildcards.scenario} and the tech {wildcards.tech} in {wildcards.shape}."
     script:
         "../scripts/tif_to_png.py"
 
@@ -116,24 +119,24 @@ rule area_potential_report:
         shapes=rules.normalise_shapes.output.shapes,
         area_potentials=expand(
             workflow.pathvars.apply("<area_potential>"),
-            tech=config["techs"].keys(),
+            tech=get_techs,
             allow_missing=True,
         ),
         area_potential_plots=expand(
-            "<results>/{{shape}}/area_potential_{tech}.png",
-            tech=config["techs"].keys(),
+            "<results>/{{shape}}/{{scenario}}/area_potential_{tech}.png",
+            tech=get_techs,
         ),
     output:
-        csv="<results>/{shape}/area_potential_report.csv",
+        csv="<results>/{shape}/{scenario}/area_potential_report.csv",
         html=report(
-            "<results>/{shape}/area_potential_report.html",
+            "<results>/{shape}/{scenario}/area_potential_report.html",
             category="area_potential_report_table",
         ),
     log:
-        "<logs>/{shape}/area_potential_report.log",
+        "<logs>/{shape}/{scenario}/area_potential_report.log",
     conda:
         "../envs/module.yaml"
     message:
-        "Generate an overview report of the area potential for all techs in shapes {wildcards.shape}."
+        "Generate an overview report of the area potential for scenario {wildcards.scenario} for all techs in shapes {wildcards.shape}."
     script:
         "../scripts/report.py"
