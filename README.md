@@ -149,6 +149,8 @@ This module is based on the following research and datasets:
     * License: "The GEBCO Grid is placed in the public domain and may be used free of charge. [...] Users must: Acknowledge the source of The GEBCO Grid. A suitable form of attribution is given in the documentation that accompanies The GEBCO Grid."
 * [GHSL (Global Human Settlement Layer)](https://human-settlement.emergency.copernicus.eu/download.php) built-up surface data (R2023, GHS-BUILT-S, 100m resolution)
     * License: "The GHSL has been produced by the EC JRC as open and free data. Reuse is authorised, provided the source is acknowledged."
+* [World Bank Global Shipping Traffic Density](https://datacatalog.worldbank.org/search/dataset/0037580/global-shipping-traffic-density), the number of AIS-recorded vessel positions per square kilometre accumulated over 2015–2021
+    * License: Creative Commons Attribution 4.0 International (CC BY 4.0)
 * [WDPA (World Database on Protected Areas)](https://www.protectedplanet.net/)
     * License: Non-commercial allowed. Citation: "UNEP-WCMC and IUCN (2025), Protected Planet: The World Database on Protected Areas (WDPA) and World Database on Other Effective Area-based Conservation Measures (WD-OECM) [Online], June 2025, Cambridge, UK: UNEP-WCMC and IUCN. Available at: www.protectedplanet.net."
 

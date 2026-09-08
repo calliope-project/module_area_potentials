@@ -72,6 +72,12 @@ techs:
         min: -50
         max: 0
         share: 0.8
+      # AIS vessel-position counts per km2 accumulated over 2015–2021.
+      ship_travel:
+        # PyPSA-Eur's default for high-density ship routes
+        # 400 AIS * 8760 hours * 6 years
+        min: 0
+        max: 21024000
     binary_layers:
       regions_land: 0
       regions_maritime: 1

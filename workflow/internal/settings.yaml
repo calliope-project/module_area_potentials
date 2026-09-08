@@ -10,6 +10,8 @@ resources:
     globcover_landcover_tif: "GLOBCOVER_L4_200901_200912_V2.3.tif"
     ghsl: "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/GHSL/GHS_BUILT_S_GLOBE_R2023A/GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss/V1-0/GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss_V1_0.zip"
     ghsl_tif: "GHS_BUILT_S_E2025_GLOBE_R2023A_4326_30ss_V1_0.tif"
+    ship_travel: "https://datacatalogfiles.worldbank.org/ddh-published/0037580/5/DR0045406/shipdensity_global.zip"
+    ship_travel_tif: "shipdensity_global.tif"
 
 # NOTE: only works because GlobCover is already in this CRS!
 target_crs: "EPSG:4326"
