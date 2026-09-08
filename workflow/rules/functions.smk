@@ -20,4 +20,3 @@ def uses_ship_travel(wildcards):
         "ship_travel" in tech_config.get("continuous_layers", {})
         for tech_config in tech_configs
     )
-
