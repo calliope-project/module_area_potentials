@@ -8,7 +8,7 @@ if config.get("tiny_files", False):
 
     rule clip_slope:
         input:
-            vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
         output:
             path="<resources>/automatic/cutout/{shape}/slope.tif",
         log:
@@ -19,11 +19,11 @@ if config.get("tiny_files", False):
         message:
             "Download slope data covering the bounds of the input shapefile."
         wrapper:
-            "v7.2.0/geo/rasterio/clip-geotiff"
+            "v9.14.0/geo/rasterio/clip"
 
     rule clip_bathymetry:
         input:
-            vector="<shapes>",
+            like_vector=rules.normalise_shapes.output.shapes,
         output:
             path="<resources>/automatic/cutout/{shape}/bathymetry.tif",
         log:
@@ -34,7 +34,7 @@ if config.get("tiny_files", False):
         message:
             "Download bathymetry data covering the bounds of the input shapefile."
         wrapper:
-            "v7.2.0/geo/rasterio/clip-geotiff"
+            "v9.14.0/geo/rasterio/clip"
 
 else:
 
@@ -56,7 +56,7 @@ else:
             "Download global slope data."
         shell:
             """
-            curl -sSLo {output:q} {params.url:q}
+            curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
             """
 
     rule download_bathymetry:
@@ -73,44 +73,34 @@ else:
             "Download global bathymetry data."
         shell:
             """
-            curl -sSLo {output:q} {params.url:q}
+            curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
             """
 
     rule clip_slope:
         input:
-            script=workflow.source_path("../scripts/clip_raster.py"),
-            shapes="<shapes>",
-            slope=rules.download_slope.output,
+            like_vector=rules.normalise_shapes.output.shapes,
+            raster=rules.download_slope.output[0],
         output:
-            "<resources>/automatic/cutout/{shape}/slope.tif",
+            path="<resources>/automatic/cutout/{shape}/slope.tif",
         log:
             "<logs>/{shape}/clip_slope.log",
-        conda:
-            "../envs/module.yaml"
         message:
             "Cut slope data to the bounds of the input shapefile."
-        shell:
-            """
-            python {input.script:q} {input.slope:q} {input.shapes:q} {output:q} 2>{log:q}
-            """
+        wrapper:
+            "v9.14.0/geo/rasterio/clip"
 
     rule clip_bathymetry:
         input:
-            script=workflow.source_path("../scripts/clip_raster.py"),
-            shapes="<shapes>",
-            bathymetry=rules.download_bathymetry.output,
+            like_vector=rules.normalise_shapes.output.shapes,
+            raster=rules.download_bathymetry.output[0],
         output:
-            "<resources>/automatic/cutout/{shape}/bathymetry.tif",
+            path="<resources>/automatic/cutout/{shape}/bathymetry.tif",
         log:
             "<logs>/{shape}/clip_bathymetry.log",
-        conda:
-            "../envs/module.yaml"
         message:
             "Cut bathymetry data to the bounds of the input shapefile."
-        shell:
-            """
-            python {input.script:q} {input.bathymetry:q} {input.shapes:q} {output:q} 2>{log:q}
-            """
+        wrapper:
+            "v9.14.0/geo/rasterio/clip"
 
 
 ##
@@ -132,7 +122,7 @@ rule download_globcover:
         "Download the GlobCover land cover data (~380 MB)."
     shell:
         """
-        curl -sSLo {output:q} {params.url:q}
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
         """
 
 
@@ -152,27 +142,74 @@ rule unzip_globcover:
         "Unzip the relevant TIF files from the GlobCover zip file."
     shell:
         """
-        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} 2>{log:q}
+        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} >{log:q} 2>&1
         """
 
 
 rule clip_landcover:
     input:
-        script=workflow.source_path("../scripts/clip_raster.py"),
-        shapes="<shapes>",
-        landcover=rules.unzip_globcover.output,
+        like_vector=rules.normalise_shapes.output.shapes,
+        raster=rules.unzip_globcover.output[0],
     output:
-        "<resources>/automatic/cutout/{shape}/landcover.tif",
+        path="<resources>/automatic/cutout/{shape}/landcover.tif",
     log:
         "<logs>/{shape}/clip_landcover.log",
-    conda:
-        "../envs/module.yaml"
     message:
         "Cut land cover data to the bounds of the input shapefile."
+    wrapper:
+        "v9.14.0/geo/rasterio/clip"
+
+
+##
+# Global Ship Traffic Density
+##
+
+
+rule download_ship_travel:
+    output:
+        "<resources>/automatic/global/ship_travel_density.zip",
+    log:
+        "<logs>/download_ship_travel.log",
+    localrule: True
+    conda:
+        "../envs/module.yaml"
+    params:
+        url=internal["resources"]["automatic"]["ship_travel"],
+    message:
+        "Download Global Ship Density for all vessel types."
     shell:
         """
-        python {input.script:q} {input.landcover:q} {input.shapes:q} {output:q} 2>{log:q}
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
         """
+
+
+rule unzip_ship_travel:
+    input:
+        rules.download_ship_travel.output[0],
+    output:
+        temp("<resources>/automatic/global/ship_travel.tif"),
+    log:
+        "<logs>/unzip_ship_travel.log",
+    params:
+        internal_paths=internal["resources"]["automatic"]["ship_travel_tif"],
+    message:
+        "Unzip the relevant TIF file from the ship travel density data."
+    wrapper:
+        "v9.8.0/utils/libarchive/extract"
+
+
+rule clip_ship_travel:
+    input:
+        like_vector=rules.normalise_shapes.output.shapes,
+        raster=rules.unzip_ship_travel.output[0],
+    output:
+        path="<resources>/automatic/cutout/{shape}/ship_travel.tif",
+    log:
+        "<logs>/{shape}/clip_ship_travel.log",
+    message:
+        "Cut ship travel data to the bounds of the input shapefile."
+    wrapper:
+        "v9.14.0/geo/rasterio/clip"
 
 
 ##
@@ -194,7 +231,7 @@ rule download_ghsl:
         "Download the GHSL (Global Human Settlement Layer) built-up surface data."
     shell:
         """
-        curl -sSLo {output:q} {params.url:q}
+        curl -sSLo {output:q} {params.url:q} >{log:q} 2>&1
         """
 
 
@@ -214,27 +251,22 @@ rule unzip_ghsl:
         "Unzip the relevant TIF file from the GHSL data."
     shell:
         """
-        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} 2>{log:q}
+        python {input.script:q} {input.zipfile:q} -f {params.target_file:q} -o {output:q} >{log:q} 2>&1
         """
 
 
 rule clip_settlement:
     input:
-        script=workflow.source_path("../scripts/clip_raster.py"),
-        shapes="<shapes>",
-        settlement=rules.unzip_ghsl.output,
+        like_vector=rules.normalise_shapes.output.shapes,
+        raster=rules.unzip_ghsl.output[0],
     output:
-        "<resources>/automatic/cutout/{shape}/settlement.tif",
+        path="<resources>/automatic/cutout/{shape}/settlement.tif",
     log:
         "<logs>/{shape}/clip_settlement.log",
-    conda:
-        "../envs/module.yaml"
     message:
         "Cut settlement data to the bounds of the input shapefile."
-    shell:
-        """
-        python {input.script:q} {input.settlement:q} {input.shapes:q} {output:q} 2>{log:q}
-        """
+    wrapper:
+        "v9.14.0/geo/rasterio/clip"
 
 
 ##
@@ -245,8 +277,8 @@ rule clip_settlement:
 rule rasterise_clip_wdpa:
     input:
         script=workflow.source_path("../scripts/clip_and_rasterise_polys.py"),
-        shapes="<shapes>",
-        reference_raster=rules.clip_landcover.output,
+        shapes=rules.normalise_shapes.output.shapes,
+        reference_raster=rules.clip_landcover.output[0],
         protected_areas="<wdpa>",
     output:
         "<resources>/automatic/cutout/{shape}/wdpa.tif",
@@ -258,5 +290,5 @@ rule rasterise_clip_wdpa:
         "Rasterise and cut WDPA data to the bounds of the input shapefile, using the landcover raster as reference for the rasterisation."
     shell:
         """
-        python {input.script:q} {input.shapes:q} {input.reference_raster:q} {input.protected_areas:q} {output:q} 2>{log:q}
+        python {input.script:q} {input.shapes:q} {input.reference_raster:q} {input.protected_areas:q} {output:q} >{log:q} 2>&1
         """

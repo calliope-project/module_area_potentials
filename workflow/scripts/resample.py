@@ -18,7 +18,7 @@ from rasterio.features import rasterize
 
 
 GLOBCOVER_TYPES = {
-    11: "POST_FLOODING",
+    11: "POST_FLOODING_CROPLANDS",
     14: "RAINFED_CROPLANDS",
     20: "MOSAIC_CROPLAND",
     30: "MOSAIC_VEGETATION",
@@ -139,6 +139,7 @@ def _rasterize_regions(shapes, reference_raster):
 @click.argument("land_cover_configuration_yaml_string", type=str)
 @click.argument("output_path", type=str)
 @click.argument("plot_path", type=str)
+@click.option("--ship-travel-path", type=str)
 def resample_inputs(
     shapes_path,
     land_cover_path,
@@ -149,6 +150,7 @@ def resample_inputs(
     land_cover_configuration_yaml_string,
     output_path,
     plot_path,
+    ship_travel_path,
 ):
     """Resample various geospatial datasets to a common shape and resolution.
 
@@ -224,7 +226,7 @@ def resample_inputs(
     ##
     da_slope = rxr.open_rasterio(slope_path, masked=True) / 100
     print(f"Slope resolution: {da_slope.rio.resolution()}")
-    resampled["slope"] = da_slope.rio.reproject_match(
+    resampled["slope_deg"] = da_slope.rio.reproject_match(
         reference_raster, resampling=Resampling.average
     )
     del da_slope
@@ -273,6 +275,17 @@ def resample_inputs(
         reference_raster, resampling=Resampling.average
     )
     del protected_areas
+
+    ##
+    # Global shipping traffic density (AIS position counts per square kilometre)
+    ##
+    if ship_travel_path:
+        ship_travel = rxr.open_rasterio(ship_travel_path, masked=True)
+        print(f"Ship travel resolution: {ship_travel.rio.resolution()}")
+        resampled["ship_travel"] = ship_travel.rio.reproject_match(
+            reference_raster, resampling=Resampling.average
+        )
+        del ship_travel
 
     netcdf4_encoding = {
         var: {"zlib": True, "complevel": 1}

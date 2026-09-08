@@ -1,21 +1,4 @@
-checkpoint breakup_shape:
-    input:
-        script=workflow.source_path("../scripts/breakup_shape.py"),
-        shapes="<shapes>",
-    output:
-        directory("<resources>/automatic/shapes/{shape}"),
-    log:
-        "<logs>/{shape}/breakup_shape.log",
-    conda:
-        "../envs/module.yaml"
-    params:
-        split_by=config["split_by"],
-    message:
-        "Break up {wildcards.shape} into the configured subunits."
-    shell:
-        """
-        python {input.script:q} {input.shapes:q} {params.split_by:q} {output:q} 2>{log:q}
-        """
+import shlex
 
 
 rule prepare_resampled_inputs:
@@ -27,6 +10,11 @@ rule prepare_resampled_inputs:
         settlement_path=rules.clip_settlement.output,
         bathymetry_path=rules.clip_bathymetry.output,
         protected_area_path=rules.rasterise_clip_wdpa.output,
+        ship_travel_path=branch(
+            condition=uses_ship_travel,
+            then=rules.clip_ship_travel.output,
+            otherwise=[],
+        ),
     output:
         resampled_input="<resources>/automatic/resampled_inputs/{shape}/{subunit}.nc",
         plot=report(
@@ -41,6 +29,11 @@ rule prepare_resampled_inputs:
         # Use internal defaults if not overridden
         land_cover_types_yaml_string=internal["land_cover_types"]
         | config.get("land_cover_types", {}),
+        ship_travel_arg=lambda wildcards, input: (
+            f"--ship-travel-path {shlex.quote(str(input.ship_travel_path))}"
+            if input.ship_travel_path
+            else ""
+        ),
     message:
         "Resample inputs for {wildcards.subunit} in {wildcards.shape} to the projection and resolution of the land cover data, while aggregating land cover types."
     shell:
@@ -49,7 +42,8 @@ rule prepare_resampled_inputs:
             "{input.shapes}/{wildcards.subunit}.parquet" \
             {input.land_cover_path:q} {input.slope_path:q} {input.settlement_path:q} {input.bathymetry_path:q} {input.protected_area_path:q} \
             {params.land_cover_types_yaml_string:q} \
-            {output.resampled_input:q} {output.plot:q} 2>{log:q}
+            {output.resampled_input:q} {output.plot:q} \
+            {params.ship_travel_arg} >{log:q} 2>&1
         """
 
 
@@ -81,7 +75,7 @@ rule area_potential:
         "Compute area potential for the scenario {wildcards.scenario}, the tech {wildcards.tech} and {wildcards.subunit} in {wildcards.shape}."
     shell:
         """
-        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} 2>{log:q}
+        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} >{log:q} 2>&1
         """
 
 
@@ -98,7 +92,7 @@ rule aggregate_area_potential:
         "Aggregate area potential for the scenario {wildcards.scenario} and the tech {wildcards.tech} in {wildcards.shape}."
     shell:
         """
-        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q}
+        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q} >{log:q} 2>&1
         """
 
 
@@ -122,7 +116,7 @@ rule plot_aggregated_area_potential:
 
 rule area_potential_report:
     input:
-        shapes="<shapes>",
+        shapes=rules.normalise_shapes.output.shapes,
         area_potentials=expand(
             workflow.pathvars.apply("<area_potential>"),
             tech=get_techs,

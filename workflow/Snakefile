@@ -48,6 +48,7 @@ wildcard_constraints:
 
 # Add all your includes here.
 include: "rules/functions.smk"
+include: "rules/preprocess.smk"
 include: "rules/automatic.smk"
 include: "rules/process.smk"
 
