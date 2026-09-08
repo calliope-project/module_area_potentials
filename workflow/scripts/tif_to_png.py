@@ -1,5 +1,7 @@
 """This script plots a TIF file to PNG format."""
 
+import sys
+
 import rioxarray as rxr
 from _script_utils import plot_all_dataset_variables
 
@@ -15,4 +17,5 @@ def tif_to_png(tif_file_in, png_file_out):
 
 
 if __name__ == "__main__":
+    sys.stderr = open(snakemake.log[0], "w", buffering=1)
     tif_to_png(snakemake.input[0], snakemake.output[0])

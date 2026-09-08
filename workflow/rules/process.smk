@@ -1,22 +1,3 @@
-checkpoint breakup_shape:
-    input:
-        script=workflow.source_path("../scripts/breakup_shape.py"),
-        shapes="<shapes>",
-    output:
-        directory("<resources>/automatic/shapes/{shape}"),
-    log:
-        "<logs>/{shape}/breakup_shape.log",
-    conda:
-        "../envs/module.yaml"
-    params:
-        split_by=config["split_by"],
-    message:
-        "Break up {wildcards.shape} into the configured subunits."
-    shell:
-        """
-        python {input.script:q} {input.shapes:q} {params.split_by:q} {output:q} 2>{log:q}
-        """
-
 
 rule prepare_resampled_inputs:
     input:
@@ -49,7 +30,7 @@ rule prepare_resampled_inputs:
             "{input.shapes}/{wildcards.subunit}.parquet" \
             {input.land_cover_path:q} {input.slope_path:q} {input.settlement_path:q} {input.bathymetry_path:q} {input.protected_area_path:q} \
             {params.land_cover_types_yaml_string:q} \
-            {output.resampled_input:q} {output.plot:q} 2>{log:q}
+            {output.resampled_input:q} {output.plot:q} >{log:q} 2>&1
         """
 
 
@@ -78,7 +59,7 @@ rule area_potential:
         "Compute area potential for the tech {wildcards.tech} and {wildcards.subunit} in {wildcards.shape}."
     shell:
         """
-        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} 2>{log:q}
+        python {input.script:q} "{input.shapes}/{wildcards.subunit}.parquet" {input.resampled_path:q} {params.config:q} {params.buffer_crs:q} {output.area_potential:q} {output.plot:q} --override_config={params.subunit_override_config:q} >{log:q} 2>&1
         """
 
 
@@ -95,7 +76,7 @@ rule aggregate_area_potential:
         "Aggregate area potential for the tech {wildcards.tech} in {wildcards.shape}."
     shell:
         """
-        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q}
+        gdalwarp --config GDAL_CACHEMAX 3000 -wm 3000 -of GTiff -co COMPRESS=LZW {input} {output.aggregated_area_potential:q} >{log:q} 2>&1
         """
 
 
@@ -119,7 +100,7 @@ rule plot_aggregated_area_potential:
 
 rule area_potential_report:
     input:
-        shapes="<shapes>",
+        shapes=rules.normalise_shapes.output.shapes,
         area_potentials=expand(
             workflow.pathvars.apply("<area_potential>"),
             tech=config["techs"].keys(),

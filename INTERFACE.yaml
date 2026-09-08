@@ -16,7 +16,8 @@ pathvars:
     shapes:
       default: "<resources>/user/shapes/{shape}.parquet"
       description: >
-        Region geometries in parquet format.
+        Region geometries in GeoParquet format.
+        The module internally normalises these geometries and transforms them to EPSG:4326 before processing.
         These should conform to the schema defined in https://github.com/calliope-project/module_geo_boundaries/blob/main/workflow/internal/shape.schema.yaml.
     wdpa:
       default: "<resources>/user/wdpa.gdb"
@@ -25,7 +26,7 @@ pathvars:
   results:
     area_potential:
       default: "<results>/{shape}/area_potential_{tech}.tif"
-      description: "Area potential GeoTIFF raster for the specified technology across all subunits."
+      description: "Area potential GeoTIFF raster in EPSG:4326 for the specified technology across all subunits."
 wildcards:
   shape: "Name of the shape to be processed, e.g., 'world', 'europe', 'MEX'."
   tech: "Name of the technology, e.g., 'pv_rooftop' or 'wind_offshore'. Available technologies are defined in the module configuration."

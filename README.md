@@ -70,12 +70,12 @@ Here is a `wind_offshore` example. We start with the `pixel_area`, the total sur
 wind_onshore:
   initial_area: pixel_area
   continuous_layers:
-    slope:
-    min: 0
-    max: 20
+    slope_deg:
+      min: 0
+      max: 20
     settlement_share:
-    min: 0
-    max: 0.01
+      min: 0
+      max: 0.01
   binary_layers:
     regions_maritime: 0
     regions_land: 1

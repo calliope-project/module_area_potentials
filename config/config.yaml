@@ -30,7 +30,7 @@ techs:
   pv_open_field:
     initial_area: pixel_area
     continuous_layers:
-      slope:
+      slope_deg:
         min: 0
         max: 3
       settlement_share:
@@ -49,7 +49,7 @@ techs:
   wind_onshore:
     initial_area: pixel_area
     continuous_layers:
-      slope:
+      slope_deg:
         min: 0
         max: 20
       settlement_share:

@@ -24,7 +24,7 @@ module_area_potentials:
     pv_open_field:
       initial_area: pixel_area
       continuous_layers:
-        slope:
+        slope_deg:
           min: 0
           max: 3
         settlement_share:
@@ -43,7 +43,7 @@ module_area_potentials:
     wind_onshore:
       initial_area: pixel_area
       continuous_layers:
-        slope:
+        slope_deg:
           min: 0
           max: 20
         settlement_share:

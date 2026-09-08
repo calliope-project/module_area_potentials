@@ -19,6 +19,11 @@ class ShapesSchema(pa.DataFrameModel):
     parent_name: Series[str] | None
     "Human-readable name in the parent dataset."
 
+    @pa.parser("geometry")
+    def make_geometries_valid(cls, geometries):
+        """Repair invalid geometries before validating them."""
+        return geometries.make_valid().rename(geometries.name)
+
     @pa.check("geometry", element_wise=True)
     def check_geometries(cls, geom):
         return (geom is not None) and (not geom.is_empty) and geom.is_valid

@@ -21,6 +21,7 @@ def clip_and_rasterise_polys(
     xmin, ymin, xmax, ymax = shapes.total_bounds
     protected_areas = gpd.read_file(protected_area_path)
     print(f"Protected areas: {len(protected_areas)}")
+    protected_areas = protected_areas.to_crs(shapes.crs)
     protected_areas = protected_areas.cx[xmin:xmax, ymin:ymax]
     print(f"Protected areas after applying total_bounds: {len(protected_areas)}")
 
